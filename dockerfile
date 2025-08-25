@@ -1,25 +1,19 @@
-# Bước 1: Chọn "Nền" (Base Image)
-# Bắt đầu với một phiên bản Linux tối giản đã được cài sẵn Python 3.9.
+# (Các lệnh khác giữ nguyên)
 FROM python:3.9-slim
-
-# Bước 2: Tạo không gian làm việc
-# Tạo một thư mục tên là /app bên trong "chiếc hộp" (container) và di chuyển vào đó.
 WORKDIR /app
-
-# Bước 3: Sao chép file "danh sách mua sắm"
-# Chép file requirements.txt từ máy bạn vào thư mục /app trong container.
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Bước 4: Cài đặt các "nguyên liệu" cần thiết
-# Chạy lệnh pip để cài đặt tất cả các thư viện được liệt kê trong requirements.txt.
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+# Cài đặt công cụ tải file từ Google Drive
+RUN pip install gdown
 
-# Bước 5: Sao chép "nguyên liệu" chính
-# Chép toàn bộ thư mục 'artifacts' (chứa index) và 'app' (chứa code) từ máy bạn vào container.
-COPY ./artifacts /app/artifacts
+# Lệnh tải các file lớn từ Google Drive
+# !!! THAY CÁC URL DƯỚI ĐÂY BẰNG LINK TỪ GOOGLE DRIVE CỦA BẠN !!!
+RUN gdown --id 1GNlkFsfdIUwnXxVad4wN8XUAJ4ut38r1 -O /app/artifacts/index.faiss
+RUN gdown --id 1ehKN4_IMk-YOv3BTXLPBMDv1tGmBahV2 -O /app/artifacts/metas.pkl.gz
+RUN gdown --id 1UImHA5i8OkspDfK54XRNDboA24pcMn4- -O /app/artifacts/bm25.pkl.gz
+RUN gdown --id 1MR6wg2wP1Qc0g9EgCLAWkNkgZoNVAZYJ -O /app/artifacts/id_to_record.pkl
+
+# (Các lệnh khác giữ nguyên)
 COPY ./app /app/
-
-# Bước 6: Chỉ định cách "dọn món" (khởi động ứng dụng)
-# Đây là lệnh sẽ được chạy khi container khởi động. 
-# Lệnh này yêu cầu uvicorn chạy ứng dụng FastAPI trong file main.py của bạn.
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
