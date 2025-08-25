@@ -200,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatInput = getEl("chat-input");
 
   // !!! QUAN TRỌNG: Thay thế URL này bằng URL API trên Render của bạn !!!
-  const API_URL = "https://egov-chatbot-api.onrender.com";
+  const API_URL = "https://your-app-name.onrender.com/ask";
 
   const renderMessages = () => {
     chatMessagesContainer.innerHTML = "";
@@ -230,7 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const thinkingIndicator = document.createElement("div");
     thinkingIndicator.className = "flex items-end gap-2 max-w-[80%] self-start";
-    thinkingIndicator.innerHTML = `<div class="px-4 py-2 rounded-2xl bg-[#4d4d4d] text-white/90 rounded-bl-none"><div class="flex items-center gap-1"><span class="w-2 h-2 bg-white/50 rounded-full animate-bounce" style="animation-delay: 0s;"></span><span class="w-2 h-2 bg-white/50 rounded-full animate-bounce" style="animation-delay: 0.15s;"></span><span class="w-2 h-2 bg-white/50 rounded-full animate-bounce" style="animation-delay: 0.3s;"></span></div></div>`;
+    thinkingIndicator.innerHTML = `<div class="px-4 py-2 rounded-2xl bg-[#4d4d4d] text-white/90 rounded-bl-none"><div class="flex items-center gap-1"><span class="w-2 h-2 bg-white/50 rounded-full animate-bounce" style="animation-delay: 0s;"></span><span class="w-2 h-2 bg-white/50 rounded-full animate-bounce" style="animation-delay: 0.15s;"></span><span class="w-2 h-2 bg-white/50 rounded-full animate-delay: 0.3s;"></span></div></div>`;
     chatMessagesContainer.appendChild(thinkingIndicator);
     chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
 
@@ -258,4 +258,18 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
   });
+
+  function appendMessage(text, sender) {
+    const msgDiv = document.createElement("div");
+    msgDiv.className = `flex items-end gap-2 max-w-[80%] ${
+      sender === "user" ? "self-end flex-row-reverse" : "self-start"
+    }`;
+    msgDiv.innerHTML = `<div class="px-4 py-2 rounded-2xl ${
+      sender === "user"
+        ? "bg-[#ff6f00] text-white rounded-br-none"
+        : "bg-[#4d4d4d] text-white/90 rounded-bl-none"
+    }">${text}</div>`;
+    chatMessagesContainer.appendChild(msgDiv);
+    chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+  }
 });
