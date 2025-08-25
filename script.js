@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   let allProcedures = [];
+  // QUAN TRỌNG: Logic này sẽ chỉ hoạt động khi file JSON được host cùng với file HTML
+  // Vì bạn đang dùng GitHub Pages, việc này sẽ hoạt động tốt
   fetch("./toan_bo_du_lieu_final.json")
     .then((response) =>
       response.ok ? response.json() : Promise.reject("File not found")
@@ -200,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatInput = getEl("chat-input");
 
   // !!! QUAN TRỌNG: Thay thế URL này bằng URL API trên Render của bạn !!!
-  const API_URL = "https://your-app-name.onrender.com/ask";
+  const API_URL = "https://egov-chatbot-api.onrender.com";
 
   const renderMessages = () => {
     chatMessagesContainer.innerHTML = "";
@@ -225,7 +227,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const userText = chatInput.value.trim();
     if (userText === "") return;
 
-    appendMessage(userText, "user");
+    messages.push({ role: "user", content: userText });
+    renderMessages();
     chatInput.value = "";
 
     const thinkingIndicator = document.createElement("div");
