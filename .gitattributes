@@ -1,4 +1,4 @@
 artifacts/*.faiss filter=lfs diff=lfs merge=lfs -text
-artifacts/*.pkl filter=lfs diff=lfs merge=lfs -text
 artifacts/*.gz filter=lfs diff=lfs merge=lfs -text
+artifacts/*.pkl filter=lfs diff=lfs merge=lfs -text
 artifacts/*.jsonl filter=lfs diff=lfs merge=lfs -text
