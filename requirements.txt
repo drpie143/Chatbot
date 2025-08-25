@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+sentence-transformers
+faiss-cpu
+rank_bm25
+google-generativeai
+numpy
