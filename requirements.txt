@@ -4,5 +4,5 @@ pydantic
 sentence-transformers
 pinecone
 google-generativeai
-numpy
 gdown
+torch==2.8.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
