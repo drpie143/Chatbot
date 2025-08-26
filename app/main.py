@@ -42,13 +42,36 @@ app = FastAPI(title="eGovernment Chatbot API")
 async def startup_event():
     load_resources()
 
-# --- HÀM TRUY VẤN PINECONE ---
+# --- HÀM TRUY VẤN PINECONE (GIỮ NGUYÊN) ---
 def retrieve_from_pinecone(query: str, top_k=5):
     embedder = RAG_RESOURCES["embedder"]
     index = RAG_RESOURCES["pinecone_index"]
     query_vector = embedder.encode(query).tolist()
     results = index.query(vector=query_vector, top_k=top_k, include_metadata=True)
     return results.get('matches', [])
+
+# --- HÀM MỚI ĐỂ LẤY NỘI DUNG ĐẦY ĐỦ TỪ ID ---
+def get_full_procedure_text_by_id(input_id: str) -> str:
+    """Hàm tra cứu dữ liệu thô SIÊU NHANH từ file id_to_record.pkl"""
+    field_map = {
+        "ten_thu_tuc": "Tên thủ tục",
+        "cach_thuc_thuc_hien": "Cách thức thực hiện",
+        "thanh_phan_ho_so": "Thành phần hồ sơ",
+        "trinh_tu_thuc_hien": "Trình tự thực hiện",
+        "co_quan_thuc_hien": "Cơ quan thực hiện",
+        "yeu_cau_dieu_kien": "Yêu cầu, điều kiện",
+        "thu_tuc_lien_quan": "Thủ tục liên quan",
+    }
+    record = RAG_RESOURCES["id_map"].get(input_id)
+    if not record:
+        return ""
+    
+    parts = []
+    for k, v in record.items():
+        if v and k in field_map:
+            parts.append(f"**{field_map[k]}**:\n{str(v).strip()}")
+    return "\n\n".join(parts)
+
 
 # --- API MODELS ---
 class QueryRequest(BaseModel):
@@ -58,7 +81,7 @@ class AnswerResponse(BaseModel):
     answer: str
     sources: List[str]
 
-# --- API ENDPOINT CHÍNH ---
+# --- API ENDPOINT CHÍNH (ĐÃ SỬA LỖI LOGIC) ---
 @app.post("/ask", response_model=AnswerResponse)
 async def ask_question(request: QueryRequest):
     query = request.question
@@ -70,17 +93,29 @@ async def ask_question(request: QueryRequest):
 
     context = ""
     sources = set()
+    unique_parent_ids = set() # Dùng để tránh lấy trùng lặp nội dung
+    
     for doc in retrieved_docs:
         metadata = doc.get('metadata', {})
-        raw_text = metadata.get('raw_text', '')
-        title = metadata.get('title', 'Không rõ')
-        field = metadata.get('field', 'Không rõ')
         parent_id = metadata.get('parent_id')
 
-        context += f"Trích đoạn từ thủ tục '{title}', mục '{field}':\n{raw_text}\n\n"
-        if parent_id:
-            sources.add(parent_id)
-
+        # Lấy toàn bộ nội dung từ file id_to_record.pkl
+        if parent_id and parent_id not in unique_parent_ids:
+            full_text = get_full_procedure_text_by_id(parent_id)
+            if full_text:
+                context += f"--- TRÍCH ĐOẠN THỦ TỤC LIÊN QUAN ---\n"
+                context += full_text + "\n\n"
+                sources.add(parent_id)
+                unique_parent_ids.add(parent_id)
+    
+    # Nếu không có bối cảnh từ ID, dùng tạm metadata
+    if not context:
+        for doc in retrieved_docs:
+            metadata = doc.get('metadata', {})
+            context += f"Trích đoạn từ thủ tục '{metadata.get('title', 'N/A')}', mục '{metadata.get('field', 'N/A')}':\n{metadata.get('raw_text', '')}\n\n"
+            if metadata.get('parent_id'):
+                sources.add(metadata.get('parent_id'))
+                
     prompt = (
         "Bạn là một trợ lý AI chuyên về thủ tục hành chính Việt Nam. "
         "Chỉ dựa vào các trích đoạn được cung cấp dưới đây, hãy trả lời câu hỏi của người dùng một cách chính xác và đầy đủ.\n\n"
