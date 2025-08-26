@@ -1,8 +1,9 @@
 fastapi
-uvicorn
+uvicorn[standard]
 pydantic
 sentence-transformers
-faiss-cpu
-rank_bm25
+pinecone
 google-generativeai
 numpy
+faiss-cpu
+tqdm
