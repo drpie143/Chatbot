@@ -3,8 +3,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
-# Chỉ cần copy file tra cứu nhanh
-COPY ./artifacts/id_to_record.pkl /app/artifacts/id_to_record.pkl
+# Tạo thư mục artifacts
+RUN mkdir -p /app/artifacts
+
+# (Các lệnh gdown hoặc COPY artifacts của bạn)
+# ...
 
 COPY ./app /app/
 EXPOSE 8000
